@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>드림패스(DreamPass) - 고등학생 맞춤 진로 & 직업 추천</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              300: '#7cc7fb',
+              400: '#38a8f8',
+              500: '#0e8ce9',
+              600: '#026fc7',
+              700: '#0358a1',
+            },
+            highschool: {
+              indigo: '#4f46e5',
+              violet: '#7c3aed',
+              rose: '#f43f5e',
+            }
+          },
+          fontFamily: {
+            sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background: linear-gradient(135deg, #f8faff 0%, #eef4ff 50%, #f3f0ff 100%);
+      min-height: 100vh;
+    }
+
+    .tag-checkbox:checked + label {
+      background-color: #0e8ce9;
+      color: #ffffff;
+      border-color: #0e8ce9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(14, 140, 233, 0.25);
+    }
+
+    .track-radio:checked + label {
+      border-color: #4f46e5;
+      background-color: #eef2ff;
+      color: #3730a3;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+  <header class="sticky top-0 z-30 glass-card border-b border-slate-200/60 shadow-sm transition-all">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="resetForm()">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+          <i class="fa-solid fa-graduation-cap text-lg animate-pulse"></i>
+        </div>
+        <div>
+          <span class="text-xl font-bold bg-gradient-to-r from-brand-600 to-indigo-600 bg-clip-text text-transparent">
+            드림패스
+          </span>
+          <span class="text-xs text-slate-500 hidden sm:inline-block ml-2 border-l border-slate-300 pl-2">
+            고등학생 맞춤 진로 & 선택과목 가이드
+          </span>
+        </div>
+      </div>
+
+      <!-- 커리어넷 바로가기 공식 링크 -->
+      <div class="flex items-center space-x-2">
+        <a 
+          href="https://www.career.go.kr/cloud/w/job/list" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs sm:text-sm font-semibold border border-emerald-200 transition-colors shadow-sm"
+          title="커리어넷 직업백과 공식 사이트로 이동"
+        >
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span>커리어넷 직업백과</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-5xl mx-auto px-4 sm:px-6 py-8 w-full">
+
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand-50 text-brand-600 border border-brand-200 text-xs sm:text-sm font-medium mb-3">
+        <i class="fa-solid fa-sparkles text-amber-500"></i>
+        <span>고교학점제 & 대학 진학 대비 진로 탐색</span>
+      </div>
+      <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        나의 관심사와 적성에 딱 맞는 <br class="sm:hidden" />
+        <span class="text-brand-600">미래 직업</span>을 찾아보세요
+      </h1>
+      <p class="mt-3 text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
+        선호하는 계열 키워드와 관심사를 입력하면 AI가 커리어넷 직업군을 분석하여<br class="hidden sm:inline" />
+        추천 직업, 관련 추천 학과, 고교 추천 선택과목까지 안내합니다.
+      </p>
+    </div>
+
+    <div id="inputSection" class="glass-card rounded-2xl shadow-xl shadow-slate-200/50 p-5 sm:p-8 border border-white mb-10 transition-all duration-300">
+      
+      <!-- 1. 학년 및 계열 선택 -->
+      <div class="mb-6">
+        <label class="block text-sm font-bold text-slate-700 mb-2">
+          <i class="fa-solid fa-user-graduate text-brand-500 mr-1.5"></i>
+          1. 학년과 관심 희망 계열을 선택해 주세요
+        </label>
+        
+        <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
+          <div>
+            <input type="radio" name="schoolGrade" id="grade1" value="고등학교 1학년" class="hidden peer" checked>
+            <label for="grade1" class="block text-center py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs sm:text-sm font-medium cursor-pointer hover:bg-slate-50 peer-checked:bg-brand-500 peer-checked:text-white peer-checked:border-brand-500">
+              고1 (공통과정)
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="schoolGrade" id="grade2" value="고등학교 2학년" class="hidden peer">
+            <label for="grade2" class="block text-center py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs sm:text-sm font-medium cursor-pointer hover:bg-slate-50 peer-checked:bg-brand-500 peer-checked:text-white peer-checked:border-brand-500">
+              고2 (과목선택)
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="schoolGrade" id="grade3" value="고등학교 3학년" class="hidden peer">
+            <label for="grade3" class="block text-center py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs sm:text-sm font-medium cursor-pointer hover:bg-slate-50 peer-checked:bg-brand-500 peer-checked:text-white peer-checked:border-brand-500">
+              고3 (진학/취업)
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div>
+            <input type="radio" name="majorTrack" id="trackTech" value="자연공학/IT계열" class="hidden peer track-radio" checked>
+            <label for="trackTech" class="block text-center py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-medium cursor-pointer transition-all hover:bg-slate-50">
+              ⚙️ 자연공학 / IT
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="majorTrack" id="trackHumanities" value="인문사회/경영계열" class="hidden peer track-radio">
+            <label for="trackHumanities" class="block text-center py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-medium cursor-pointer transition-all hover:bg-slate-50">
+              📖 인문사회 / 경영
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="majorTrack" id="trackMedical" value="의약보건/생명계열" class="hidden peer track-radio">
+            <label for="trackMedical" class="block text-center py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-medium cursor-pointer transition-all hover:bg-slate-50">
+              🏥 의약보건 / 생명
+            </label>
+          </div>
+          <div>
+            <input type="radio" name="majorTrack" id="trackArts" value="예체능/미디어계열" class="hidden peer track-radio">
+            <label for="trackArts" class="block text-center py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-medium cursor-pointer transition-all hover:bg-slate-50">
+              🎨 예체능 / 미디어
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-sm font-bold text-slate-700">
+            <i class="fa-solid fa-tags text-brand-500 mr-1.5"></i>
+            2. 나의 흥미 키워드를 다중 선택해 주세요
+          </label>
+          <span class="text-xs text-brand-600 font-medium">최소 1개 이상 선택</span>
+        </div>
+        <div class="flex flex-wrap gap-2 sm:gap-2.5" id="tagContainer">
+          <!-- JS dynamic tag rendering -->
+        </div>
+      </div>
+
+      <!-- 3. 자유 서술 입력창 -->
+      <div class="mb-8">
+        <label for="userStory" class="block text-sm font-bold text-slate-700 mb-2">
+          <i class="fa-solid fa-pen-fancy text-brand-500 mr-1.5"></i>
+          3. 좋아하는 과목, 활동 경험, 강점이나 희망하는 직무 특성을 적어주세요
+        </label>
+        <div class="relative">
+          <textarea 
+            id="userStory" 
+            rows="3" 
+            placeholder="예시: 수학과 파이썬 코딩에 관심이 많고, 동아리 활동에서 데이터 탐구 보고서를 썼을 때 흥미를 느꼈어요. 미래에는 첨단 IT 기술이나 AI 분야에서 사람들에게 도움이 되는 서비스를 만들고 싶습니다."
+            class="w-full p-4 rounded-xl border border-slate-200 bg-white/90 text-sm focus:ring-2 focus:ring-brand-400 focus:border-brand-500 outline-none transition-all placeholder:text-slate-400 leading-relaxed resize-none"
+          ></textarea>
+          <div class="text-right mt-1">
+            <span id="charCount" class="text-xs text-slate-400">0 / 300자</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 추천 받기 버튼 -->
+      <div class="text-center">
+        <button 
+          id="submitBtn" 
+          onclick="startRecommendation()" 
+          class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-brand-500 to-indigo-600 text-white font-bold text-base hover:from-brand-600 hover:to-indigo-700 active:scale-95 transition-all shadow-lg shadow-brand-500/30 flex items-center justify-center space-x-2 mx-auto"
+        >
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>내 적성에 맞는 직업 추천받기</span>
+        </button>
+      </div>
+
+    </div>
+
+    <div id="loadingSection" class="hidden glass-card rounded-2xl p-10 text-center border border-white shadow-xl max-w-lg mx-auto mb-10">
+      <div class="w-16 h-16 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin mx-auto mb-4"></div>
+      <h3 class="text-lg font-bold text-slate-800 mb-2" id="loadingTitle">적성 분석 중...</h3>
+      <p class="text-sm text-slate-500" id="loadingSubtitle">선택하신 계열 및 흥미 키워드를 바탕으로 커리어넷 직업군을 매칭하고 있습니다.</p>
+      
+      <div class="w-full bg-slate-100 rounded-full h-2.5 mt-6 overflow-hidden">
+        <div id="progressBar" class="bg-gradient-to-r from-brand-500 to-indigo-500 h-2.5 rounded-full transition-all duration-300 w-0"></div>
+      </div>
+    </div>
+
+    <div id="resultSection" class="hidden space-y-8">
+      
+      <div class="glass-card rounded-2xl p-6 border border-white shadow-lg bg-gradient-to-br from-white via-brand-50/40 to-indigo-50/40">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-1 rounded-md bg-brand-500 text-white text-xs font-semibold" id="resultGradeBadge">고등학교 2학년</span>
+              <span class="px-2.5 py-1 rounded-md bg-indigo-100 text-indigo-700 text-xs font-semibold" id="resultTrackBadge">자연공학/IT계열</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mt-2">
+              ✨ 적성에 맞춰 엄선된 <span class="text-brand-600">추천 직업 TOP 4</span>
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">
+              입력하신 적성과 희망 계열을 바탕으로 커리어넷 직업 데이터베이스에서 최적의 직업을 매칭했습니다.
+            </p>
+          </div>
+          
+          <div class="flex items-center space-x-2 self-stretch sm:self-auto">
+            <button 
+              onclick="copyShareLink()" 
+              class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-all shadow-sm flex items-center justify-center space-x-1"
+            >
+              <i class="fa-solid fa-share-nodes text-slate-500"></i>
+              <span>공유</span>
+            </button>
+            <button 
+              onclick="resetForm()" 
+              class="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 text-xs font-semibold transition-all shadow-sm flex items-center justify-center space-x-1"
+            >
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>다시 검사하기</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="jobCardsGrid">
+        <!-- JS dynamic rendering -->
+      </div>
+
+      <div class="rounded-2xl p-6 sm:p-8 bg-gradient-to-r from-slate-900 to-indigo-950 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 text-center md:text-left">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 text-brand-300 text-xs font-medium">
+            <i class="fa-solid fa-book-bookmark"></i>
+            <span>교육부 & 한국직업능력연구원 공식 커리어넷</span>
+          </div>
+          <h3 class="text-lg sm:text-xl font-bold">더 자세한 진로/직업 탐색이 필요하신가요?</h3>
+          <p class="text-xs sm:text-sm text-slate-300 max-w-xl">
+            커리어넷 직업백과에서는 직업별 세부 연봉, 미래 전망, 진출 경로, 학과 정보 및 진로 심리검사를 제공합니다.
+          </p>
+        </div>
+        <a 
+          href="https://www.career.go.kr/cloud/w/job/list" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="shrink-0 px-6 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-white font-bold text-sm transition-all shadow-lg shadow-brand-500/30 flex items-center space-x-2"
+        >
+          <span>커리어넷 전체 직업 둘러보기</span>
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="border-t border-slate-200/80 bg-white/60 py-6 text-center text-xs text-slate-500 mt-12">
+    <div class="max-w-5xl mx-auto px-4 space-y-2">
+      <p class="font-medium text-slate-600">드림패스 (DreamPass) - 고등학생 맞춤 진로 가이드</p>
+      <p>본 웹앱의 직업 정보는 <a href="https://www.career.go.kr/cloud/w/job/list" target="_blank" rel="noopener noreferrer" class="text-brand-600 hover:underline font-semibold">커리어넷(CareerNet) 직업백과</a>를 기반으로 연계되어 제공됩니다.</p>
+    </div>
+  </footer>
+
+  <div id="toastMessage" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 text-sm">
+    <i class="fa-solid fa-circle-check text-emerald-400" id="toastIcon"></i>
+    <span id="toastText">메시지</span>
+  </div>
+
+  <script>
+    const INTEREST_TAGS = [
+      { id: "it_software", label: "💻 IT / AI / 프로그래밍" },
+      { id: "creative_design", label: "🎨 시각 디자인 / 미디어" },
+      { id: "planning_business", label: "💡 경영 / 기획 / 마케팅" },
+      { id: "helping_people", label: "🤝 교육 / 상담 / 사회복지" },
+      { id: "nature_animal", label: "🌱 환경 / 생태 / 생명과학" },
+      { id: "science_research", label: "🔬 첨단과학 / 연구개발" },
+      { id: "medical_health", label: "🏥 의학 / 약학 / 보건" },
+      { id: "media_content", label: "🎬 영상 PD / 크리에이터" },
+      { id: "sports_outdoor", label: "🏃 체육 / 스포츠과학" },
+      { id: "math_data", label: "📊 통계 / 빅데이터 분석" },
+      { id: "law_justice", label: "⚖️ 법률 / 공공 / 외교" },
+      { id: "craft_maker", label: "🛠️ 로봇 / 기계공학" },
+    ];
+
+    const JOB_DATABASE = [
+      {
+        id: "ai_specialist",
+        name: "인공지능(AI) 전문가",
+        categories: ["it_software", "math_data", "science_research"],
+        track: "자연공학/IT계열",
+        badge: "유망 첨단기술",
+        summary: "사람처럼 생각하고 데이터 패턴을 학습하는 AI 모델 및 소프트웨어를 연구 개발합니다.",
+        fitReason: "수리 논리적 사고력과 코딩에 흥미가 있으며 새로운 기술로 문제를 해결하는 것을 선호하는 학생에게 적극 추천합니다.",
+        skills: ["파이썬 프로그래밍", "수리적 사고력", "데이터 분석"],
+        majors: ["인공지능학과", "컴퓨터공학과", "데이터사이언스학과"],
+        subjects: ["미적분", "인공지능 수학", "프로그래밍", "물리학I"],
+        careerNetSearch: "인공지능전문가",
+        bgLight: "bg-blue-50/70",
+        borderLight: "border-blue-200"
+      },
+      {
+        id: "data_scientist",
+        name: "빅데이터 전문가",
+        categories: ["math_data", "it_software", "planning_business"],
+        track: "자연공학/IT계열",
+        badge: "데이터 인사이트",
+        summary: "방대한 데이터를 분석하여 기업 및 사회 문제를 해결하는 전략과 트렌드를 발견합니다.",
+        fitReason: "통계 지표와 숫자를 분석하는 것을 즐기고 근거에 기반한 결론 도출을 잘하는 학생에게 잘 맞습니다.",
+        skills: ["통계적 추론", "R/Python 툴", "데이터 시각화"],
+        majors: ["통계학과", "빅데이터학과", "경영정보학과"],
+        subjects: ["확률과 통계", "수학과제 탐구", "정보"],
+        careerNetSearch: "빅데이터전문가",
+        bgLight: "bg-cyan-50/70",
+        borderLight: "border-cyan-200"
+      },
+      {
+        id: "ux_ui_designer",
+        name: "UX/UI 디자이너",
+        categories: ["creative_design", "it_software", "planning_business"],
+        track: "예체능/미디어계열",
+        badge: "디지털 감성",
+        summary: "앱이나 웹 서비스를 이용할 때 사용자가 편리하고 아름답게 느낄 수 있도록 화면을 인터랙티브하게 디자인합니다.",
+        fitReason: "시각적 표현 감각이 뛰어나고 사용자의 경험과 심리를 고려하는 세심한 관찰력을 가진 학생에게 추천합니다.",
+        skills: ["디자인 툴(Figma)", "사용자 심리 분석", "커뮤니케이션"],
+        majors: ["시각디자인학과", "미디어디자인학과", "산업디자인과"],
+        subjects: ["미술 창작", "미디어 콘텐츠 제작", "심리학"],
+        careerNetSearch: "UIUX디자이너",
+        bgLight: "bg-purple-50/70",
+        borderLight: "border-purple-200"
+      },
+      {
+        id: "marketing_planner",
+        name: "브랜드 마케터 & 서비스 기획자",
+        categories: ["planning_business", "media_content", "it_software"],
+        track: "인문사회/경영계열",
+        badge: "트렌드 리더",
+        summary: "시장과 소비자 트렌드를 파악하여 브랜드의 가치를 높이고 새로운 서비스를 기획·홍보합니다.",
+        fitReason: "사람들의 마음을 사로잡는 아이디어를 내고 소통 및 아이디어 발표에 적극적인 성향에 어울립니다.",
+        skills: ["시장 분석력", "콘텐츠 기획", "설득적 발표력"],
+        majors: ["경영학과", "광고홍보학과", "미디어커뮤니케이션학과"],
+        subjects: ["경제", "사회·문화", "실용 국어", "화법과 작문"],
+        careerNetSearch: "마케팅전문가",
+        bgLight: "bg-orange-50/70",
+        borderLight: "border-orange-200"
+      },
+      {
+        id: "bio_medical_researcher",
+        name: "바이오 의약품 연구원",
+        categories: ["medical_health", "science_research", "nature_animal"],
+        track: "의약보건/생명계열",
+        badge: "생명 바이오",
+        summary: "질병을 치료하는 백신 및 신약을 개발하기 위해 생명공학적 실험과 데이터 연구를 수행합니다.",
+        fitReason: "생물과 화학 실험에 깊은 흥미를 가지며 끈기 있게 연구를 수행하는 태도를 가진 학생에게 적합합니다.",
+        skills: ["생물학 실험 분석", "데이터 정확성", "논리적 연구력"],
+        majors: ["생명공학과", "약학과", "의생명공학과"],
+        subjects: ["생명과학I·II", "화학I·II", "융합과학"],
+        careerNetSearch: "생명공학연구원",
+        bgLight: "bg-rose-50/70",
+        borderLight: "border-rose-200"
+      },
+      {
+        id: "counselor",
+        name: "청소년 심리상담사",
+        categories: ["helping_people", "law_justice"],
+        track: "인문사회/경영계열",
+        badge: "공감 & 심리",
+        summary: "청소년들이 겪는 고민과 학업/진로 스트레스를 경청하고 전문적 상담으로 성장을 돕습니다.",
+        fitReason: "타인의 감정에 높은 경청과 공감 능력을 보이고 친구들의 고민을 진심으로 나누는 것을 보람차게 여기는 학생에게 잘 맞습니다.",
+        skills: ["공감 및 경청", "심리 진단 분석", "의사소통"],
+        majors: ["심리학과", "청소년학과", "교육학과"],
+        subjects: ["심리학", "생활과 윤리", "사회·문화"],
+        careerNetSearch: "청소년상담사",
+        bgLight: "bg-emerald-50/70",
+        borderLight: "border-emerald-200"
+      },
+      {
+        id: "robotics_engineer",
+        name: "로봇공학 기술자",
+        categories: ["craft_maker", "it_software", "science_research"],
+        track: "자연공학/IT계열",
+        badge: "하드웨어 & AI",
+        summary: "자율주행, 산업자동화, 의료 보조에 사용되는 첨단 로봇의 기계 제어 및 하드웨어를 설계합니다.",
+        fitReason: "물리적 회로나 기계 장치를 만들고 제어하는 것을 즐기는 학생에게 적합합니다.",
+        skills: ["회로 설계", "센서 제어", "기계 메커니즘"],
+        majors: ["로봇공학과", "기계공학과", "전자공학과"],
+        subjects: ["물리학I·II", "미적분", "기하", "공학 일반"],
+        careerNetSearch: "로봇공학기술자",
+        bgLight: "bg-sky-50/70",
+        borderLight: "border-sky-200"
+      },
+      {
+        id: "media_pd",
+        name: "미디어 콘텐츠 프로듀서(PD)",
+        categories: ["media_content", "creative_design", "planning_business"],
+        track: "예체능/미디어계열",
+        badge: "영상 콘텐츠",
+        summary: "방송, 유튜브, OTT 플랫폼용 영상을 기획하고 연출하며 편집 작업을 총괄합니다.",
+        fitReason: "트렌드 변화에 민감하고 나만의 이야기를 영상 매체로 표현하기 좋아하는 학생에게 어울립니다.",
+        skills: ["영상 편집(Premiere)", "스토리텔링", "연출력"],
+        majors: ["미디어커뮤니케이션학과", "신문방송학과", "영상제작과"],
+        subjects: ["미디어 콘텐츠 제작", "문학", "사회·문화"],
+        careerNetSearch: "방송연출가",
+        bgLight: "bg-amber-50/70",
+        borderLight: "border-amber-200"
+      }
+    ];
+
+    function initTags() {
+      const container = document.getElementById('tagContainer');
+      container.innerHTML = '';
+      
+      INTEREST_TAGS.forEach((tag) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'inline-block';
+        wrapper.innerHTML = `
+          <input type="checkbox" id="tag_${tag.id}" value="${tag.id}" class="hidden peer tag-checkbox">
+          <label for="tag_${tag.id}" class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-white text-slate-600 border border-slate-200 cursor-pointer transition-all duration-200 hover:bg-slate-50 select-none">
+            ${tag.label}
+          </label>
+        `;
+        container.appendChild(wrapper);
+      });
+    }
+
+    document.getElementById('userStory').addEventListener('input', function(e) {
+      const len = e.target.value.length;
+      document.getElementById('charCount').textContent = `${len} / 300자`;
+      if (len > 300) {
+        e.target.value = e.target.value.substring(0, 300);
+      }
+    });
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toastMessage');
+      const toastText = document.getElementById('toastText');
+      const toastIcon = document.getElementById('toastIcon');
+      
+      toastText.textContent = message;
+      toastIcon.className = type === 'error' 
+        ? "fa-solid fa-triangle-exclamation text-rose-400" 
+        : "fa-solid fa-circle-check text-emerald-400";
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3000);
+    }
+
+    function calculateRecommendations(selectedTagIds, selectedTrack, userStory) {
+      const storyLower = userStory.toLowerCase();
+
+      const keywordWeights = {
+        it_software: ['코딩', '컴퓨터', '프로그래밍', '파이썬', '소프트웨어', 'ai', '개발'],
+        creative_design: ['디자인', '그림', '미술', '일러스트', 'ux', 'ui', '창작'],
+        planning_business: ['기획', '마케팅', '경영', '아이디어', '발표', '브랜드'],
+        helping_people: ['상담', '돕기', '봉사', '경청', '친구', '교육', '심리'],
+        nature_animal: ['생명', '환경', '생태', '동물', '식물', '지구'],
+        science_research: ['과학', '실험', '연구', '물리', '화학', '탐구'],
+        medical_health: ['의학', '약학', '병원', '보건', '치료', '바이오'],
+        media_content: ['영상', '유튜브', '방송', 'pd', '편집', '미디어'],
+        math_data: ['수학', '통계', '데이터', '숫자', '분석', '계산'],
+        craft_maker: ['로봇', '기계', '회로', '조립', '공학', '하드웨어']
+      };
+
+      const scored = JOB_DATABASE.map(job => {
+        let score = 0;
+
+        // 계열 일치 가산점
+        if (job.track === selectedTrack) {
+          score += 25;
+        }
+
+        // 태그 일치 가산점
+        job.categories.forEach(cat => {
+          if (selectedTagIds.includes(cat)) {
+            score += 30;
+          }
+        });
+
+        // 텍스트 분석 가산점
+        if (userStory.trim()) {
+          job.categories.forEach(cat => {
+            const words = keywordWeights[cat] || [];
+            words.forEach(w => {
+              if (storyLower.includes(w)) score += 12;
+            });
+          });
+          if (storyLower.includes(job.name)) score += 20;
+        }
+
+        score += Math.floor(Math.random() * 5);
+        const matchRate = Math.min(98, Math.max(75, Math.floor((score / 110) * 100)));
+
+        return { ...job, score, matchRate };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      return scored.slice(0, 4);
+    }
+
+    function startRecommendation() {
+      const selectedTags = Array.from(document.querySelectorAll('.tag-checkbox:checked')).map(el => el.value);
+      const userStory = document.getElementById('userStory').value;
+      const schoolGrade = document.querySelector('input[name="schoolGrade"]:checked').value;
+      const majorTrack = document.querySelector('input[name="majorTrack"]:checked').value;
+
+      if (selectedTags.length === 0 && !userStory.trim()) {
+        showToast("흥미 키워드를 최소 1개 이상 선택해 주세요!", "error");
+        return;
+      }
+
+      document.getElementById('inputSection').classList.add('hidden');
+      document.getElementById('resultSection').classList.add('hidden');
+      const loadingSection = document.getElementById('loadingSection');
+      loadingSection.classList.remove('hidden');
+
+      const progressBar = document.getElementById('progressBar');
+      const loadingTitle = document.getElementById('loadingTitle');
+      const loadingSubtitle = document.getElementById('loadingSubtitle');
+
+      const steps = [
+        { progress: '35%', title: '적성 및 관심 키워드 분석 중...', subtitle: '희망 계열과 작성하신 문장 키워드를 매칭합니다.' },
+        { progress: '70%', title: '커리어넷 데이터베이스 조회 중...', subtitle: '고교학점제 선택과목과 연계된 추천 직업군을 탐색합니다.' },
+        { progress: '95%', title: '맞춤 진로 가이드 작성 완료!', subtitle: '상세 결과 카드를 구성하는 중입니다.' }
+      ];
+
+      let stepIdx = 0;
+      const interval = setInterval(() => {
+        if (stepIdx < steps.length) {
+          progressBar.style.width = steps[stepIdx].progress;
+          loadingTitle.textContent = steps[stepIdx].title;
+          loadingSubtitle.textContent = steps[stepIdx].subtitle;
+          stepIdx++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            renderResults(selectedTags, majorTrack, userStory, schoolGrade);
+          }, 300);
+        }
+      }, 450);
+    }
+
+    function renderResults(selectedTags, majorTrack, userStory, schoolGrade) {
+      document.getElementById('loadingSection').classList.add('hidden');
+      const resultSection = document.getElementById('resultSection');
+      resultSection.classList.remove('hidden');
+
+      window.scrollTo({ top: 100, behavior: 'smooth' });
+
+      try {
+        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+      } catch (e) {}
+
+      document.getElementById('resultGradeBadge').textContent = schoolGrade;
+      document.getElementById('resultTrackBadge').textContent = majorTrack;
+
+      const topJobs = calculateRecommendations(selectedTags, majorTrack, userStory);
+      const grid = document.getElementById('jobCardsGrid');
+      grid.innerHTML = '';
+
+      topJobs.forEach((job, idx) => {
+        // 커리어넷 공식 검색 URL 생성 (핵심 연동)
+        const careerNetUrl = `https://www.career.go.kr/cloud/w/job/list?searchJobNm=${encodeURIComponent(job.careerNetSearch)}`;
+
+        const card = document.createElement('div');
+        card.className = `glass-card rounded-2xl p-6 border ${job.borderLight} shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between group`;
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-3 py-1 rounded-full text-xs font-bold ${job.bgLight} text-slate-700 border border-slate-200/60">
+                ${job.badge}
+              </span>
+              <div class="flex items-center space-x-1.5 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-200">
+                <i class="fa-solid fa-fire text-amber-500 text-xs"></i>
+                <span class="text-xs font-extrabold text-brand-700">적합도 ${job.matchRate}%</span>
+              </div>
+            </div>
+
+            <h3 class="text-xl sm:text-2xl font-extrabold text-slate-800 group-hover:text-brand-600 transition-colors">
+              ${idx + 1}. ${job.name}
+            </h3>
+
+            <p class="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed bg-white/70 p-3 rounded-xl border border-slate-100">
+              ${job.summary}
+            </p>
+
+            <div class="mt-4">
+              <h4 class="text-xs font-bold text-brand-700 flex items-center mb-1">
+                <i class="fa-solid fa-check-circle mr-1 text-brand-500"></i>
+                추천 이유
+              </h4>
+              <p class="text-xs text-slate-600 pl-3 border-l-2 border-brand-300">
+                ${job.fitReason}
+              </p>
+            </div>
+
+            <div class="mt-4">
+              <h4 class="text-xs font-bold text-slate-700 mb-1.5">🎓 대학 관련 학과</h4>
+              <div class="flex flex-wrap gap-1">
+                ${job.majors.map(m => `<span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[11px] font-medium border border-indigo-100">${m}</span>`).join('')}
+              </div>
+            </div>
+
+            <div class="mt-3 mb-5">
+              <h4 class="text-xs font-bold text-slate-700 mb-1.5">📚 고교 추천 선택과목</h4>
+              <div class="flex flex-wrap gap-1">
+                ${job.subjects.map(s => `<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[11px] font-medium border border-emerald-100">${s}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- 커리어넷 직업백과 바로가기 버튼 -->
+          <div class="pt-4 border-t border-slate-200/60">
+            <a 
+              href="${careerNetUrl}" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-brand-600 text-white text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center space-x-2 shadow-sm group-hover:shadow-md"
+            >
+              <span>커리어넷 직업백과에서 자세히 보기</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+            </a>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function resetForm() {
+      document.querySelectorAll('.tag-checkbox').forEach(cb => cb.checked = false);
+      document.getElementById('userStory').value = '';
+      document.getElementById('charCount').textContent = '0 / 300자';
+
+      document.getElementById('resultSection').classList.add('hidden');
+      document.getElementById('loadingSection').classList.add('hidden');
+      document.getElementById('inputSection').classList.remove('hidden');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function copyShareLink() {
+      const url = window.location.href;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast("웹앱 주소가 복사되었습니다!");
+        }).catch(() => fallbackCopy(url));
+      } else {
+        fallbackCopy(url);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast("웹앱 주소가 복사되었습니다!");
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTags();
+    });
+  </script>
+</body>
+</html>
